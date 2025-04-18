@@ -1,1 +1,16 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+
+# MacOS files
+.DS_Store
+
+# MetaTrader credentials (ensure you keep secure!)
+config/credentials.json
+
+.idea/
+
 mt5/*.exe

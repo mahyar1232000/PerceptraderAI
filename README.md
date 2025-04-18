@@ -207,3 +207,15 @@ logs/: شامل فایل‌های لاگ معاملات
 
 مجوز
 این پروژه تحت مجوز MIT منتشر شده است.
+
+
+
+# PerceptraderAI
+
+Automated trading framework integrating data fetching, preprocessing, strategy generation, risk & capital management, and execution via MetaTrader5.  
+
+## Setup
+1. Create & activate a Python 3.10+ virtual environment.  
+2. Install dependencies: `pip install -r requirements.txt`  
+3. Fill in your `config/credentials.json` with MT5 & API keys.  
+4. Run: `python main.py` or use `AlgorithmicTrader` / `HighFrequencyTrader` as needed.

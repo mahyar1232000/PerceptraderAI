@@ -1,0 +1,39 @@
+PerceptraderAI/
+├── main.py
+├── config/
+│   ├── settings.py
+│   └── credentials.json
+├── data/
+│   ├── fetcher.py
+│   ├── preprocessor.py
+│   └── external_sources/
+│       ├── alpha_vantage.py
+│       └── finnhub.py
+├── models/
+│   ├── deepseek_model.py
+│   ├── reinforcement_learning.py
+│   └── genetic_optimizer.py
+├── strategy/
+│   ├── signal_generator.py
+│   ├── risk_manager.py
+│   ├── strategy_optimizer.py
+│   └── capital_manager.py
+├── trade/
+│   ├── executor.py
+│   ├── multi_asset_support.py
+│   ├── algorithmic_trading.py
+│   ├── high_frequency_trading.py
+│   ├── mt5_connector.py
+│   └── executor.py
+├── sentiment/
+│   ├── sentiment_analysis.py
+│   └── social_media_analysis.py
+├── utils/
+│   ├── logger.py
+│   └── notifier.py
+├── gui/
+│   └── interface.py
+├── logs/
+│   └── trade_log.txt
+├── requirements.txt
+└── README.md

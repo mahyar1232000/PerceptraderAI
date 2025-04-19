@@ -5,7 +5,7 @@ import MetaTrader5 as mt5
 class TradeExecutor:
     """
     Executes trade orders via the MetaTrader5 Python API,
-    with detailed handling of common error codes.
+    with robust handling for cases where order_send returns None.
     """
 
     def __init__(self):
@@ -23,19 +23,11 @@ class TradeExecutor:
         comment: str = "PerceptraderAI"
     ) -> dict:
         """
-        Sends an order to the MT5 terminal and handles retcodes, especially 10027.
+        Sends an order to the MT5 terminal and handles the case where
+        mt5.order_send unexpectedly returns None (instead of a trade result).
 
-        :param symbol: Trading instrument (e.g., "EURUSD")
-        :param side: "buy" or "sell"
-        :param quantity: Volume in lots
-        :param order_type: 'market' or 'limit'
-        :param price: Price for limit orders
-        :param deviation: Max slippage
-        :param magic: Expert Advisor identifier
-        :param comment: Order comment
-        :return: MqlTradeResult fields as dict
+        Raises RuntimeError with the MT5 last_error() message if no result.
         """
-        # Prepare the request dictionary according to MT5 Python API :contentReference[oaicite:0]{index=0}
         request = {
             "action": mt5.TRADE_ACTION_DEAL,
             "symbol": symbol,
@@ -49,41 +41,29 @@ class TradeExecutor:
             "type_filling": mt5.ORDER_FILLING_IOC
         }
 
-        # Send the order
         result = mt5.order_send(request)
+        if result is None:
+            # mt5.order_send can return None when the request dict is invalid or other internal errors occur :contentReference[oaicite:0]{index=0}
+            err = mt5.last_error()
+            msg = f"OrderSend returned None, last_error={err}"
+            logging.error(msg)
+            raise RuntimeError(msg)
+
         ret = result.retcode
 
-        # Handle specific error 10027: auto‑trading disabled by client terminal :contentReference[oaicite:1]{index=1}
+        # Existing error handling (e.g., client disables AutoTrading)
         if ret == mt5.TRADE_RETCODE_CLIENT_DISABLES_AT:
-            msg = (
-                "OrderSend failed (10027): AutoTrading disabled by client terminal. "
-                "Please enable the AutoTrading button on the MT5 toolbar."
-            )
+            msg = ("OrderSend failed (10027): AutoTrading disabled by client terminal. "
+                   "Please enable the AutoTrading button on the MT5 toolbar.")
             logging.error(msg)
             raise RuntimeError(msg)
 
-        # Other common error codes you might want to catch:
-        elif ret == mt5.TRADE_RETCODE_TRADE_DISABLED:
-            msg = "OrderSend failed (10017): Trading is disabled on the server side."  # TRADE_RETCODE_TRADE_DISABLED=10017 :contentReference[oaicite:2]{index=2}
+        # Other retcode checks...
+        if ret != mt5.TRADE_RETCODE_DONE:
+            err_msg = mt5.last_error()[1] if mt5.last_error() else "Unknown error"
+            msg = f"OrderSend failed (retcode={ret}): {err_msg}"
             logging.error(msg)
             raise RuntimeError(msg)
 
-        elif ret == mt5.TRADE_RETCODE_MARKET_CLOSED:
-            msg = "OrderSend failed (10018): Market is closed."  # :contentReference[oaicite:3]{index=3}
-            logging.error(msg)
-            raise RuntimeError(msg)
-
-        elif ret == mt5.TRADE_RETCODE_NO_MONEY:
-            msg = "OrderSend failed (10019): Not enough funds."  # :contentReference[oaicite:4]{index=4}
-            logging.error(msg)
-            raise RuntimeError(msg)
-
-        elif ret != mt5.TRADE_RETCODE_DONE:
-            # Generic catch-all for other retcodes
-            msg = f"OrderSend failed (retcode={ret}): {mt5.last_error()[1]}"
-            logging.error(msg)
-            raise RuntimeError(msg)
-
-        # Success case
         logging.info(f"OrderSend succeeded: {result}")
         return result._asdict()

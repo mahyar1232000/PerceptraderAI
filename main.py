@@ -1,7 +1,7 @@
 if __name__ == '__main__':
     from datetime import datetime
     from config.settings import load_credentials
-    from trade.mt5_connector import connect_to_mt5, shutdown_mt5
+    from trade.mt5_connector import connect_to_mt5, shutdown_mt5  # Module 'shutdown_mt5' not found
     from trade.executor import TradeExecutor
     from data.fetcher import fetch_ohlcv
     from data.preprocessor import clean_data, add_technical_indicators

@@ -1,11 +1,10 @@
 import logging
 import MetaTrader5 as mt5
 
-
 class TradeExecutor:
     """
-    Executes trade orders via the MetaTrader5 Python API,
-    with robust handling for cases where order_send returns None.
+    Executes orders via the MT5 Python API, handling market vs. pending order
+    parameters to avoid 'Invalid "price" argument' errors.
     """
 
     def __init__(self):
@@ -18,22 +17,22 @@ class TradeExecutor:
         quantity: float,
         order_type: str = "market",
         price: float = None,
+        sl: float = None,
+        tp: float = None,
         deviation: int = 20,
         magic: int = 234000,
         comment: str = "PerceptraderAI"
     ) -> dict:
-        """
-        Sends an order to the MT5 terminal and handles the case where
-        mt5.order_send unexpectedly returns None (instead of a trade result).
+        # Determine order action and type
+        action = mt5.TRADE_ACTION_DEAL
+        trade_type = mt5.ORDER_TYPE_BUY if side.lower() == "buy" else mt5.ORDER_TYPE_SELL
 
-        Raises RuntimeError with the MT5 last_error() message if no result.
-        """
+        # Build the request dict
         request = {
-            "action": mt5.TRADE_ACTION_DEAL,
+            "action": action,
             "symbol": symbol,
-            "volume": quantity,
-            "type": mt5.ORDER_TYPE_BUY if side.lower() == "buy" else mt5.ORDER_TYPE_SELL,
-            "price": price,
+            "volume": float(quantity),              # ensure float :contentReference[oaicite:6]{index=6}
+            "type": trade_type,
             "deviation": deviation,
             "magic": magic,
             "comment": comment,
@@ -41,9 +40,27 @@ class TradeExecutor:
             "type_filling": mt5.ORDER_FILLING_IOC
         }
 
+        # For market orders, omit 'price'; if SL/TP provided, include them
+        if order_type.lower() == "market":
+            # If you need to reference the current price:
+            tick = mt5.symbol_info_tick(symbol)
+            if tick is None:
+                logging.error(f"Cannot retrieve tick for {symbol}: {mt5.last_error()}")
+                raise RuntimeError(f"Tick retrieval failed: {mt5.last_error()}")
+            # Optionally: request["price"] = tick.ask if trade_type == mt5.ORDER_TYPE_BUY else tick.bid
+            if sl is not None:
+                request["sl"] = float(sl)
+            if tp is not None:
+                request["tp"] = float(tp)
+        else:
+            # Pending orders require a valid price
+            if price is None:
+                raise ValueError("Limit orders require a 'price' argument.")
+            request["price"] = float(price)
+
+        # Send order
         result = mt5.order_send(request)
         if result is None:
-            # mt5.order_send can return None when the request dict is invalid or other internal errors occur :contentReference[oaicite:0]{index=0}
             err = mt5.last_error()
             msg = f"OrderSend returned None, last_error={err}"
             logging.error(msg)
@@ -51,16 +68,21 @@ class TradeExecutor:
 
         ret = result.retcode
 
-        # Existing error handling (e.g., client disables AutoTrading)
+        # Handle specific MT5 retcodes
         if ret == mt5.TRADE_RETCODE_CLIENT_DISABLES_AT:
-            msg = ("OrderSend failed (10027): AutoTrading disabled by client terminal. "
-                   "Please enable the AutoTrading button on the MT5 toolbar.")
+            msg = ("OrderSend failed (10027): AutoTrading disabled. "
+                   "Enable the AutoTrading button in MT5.")  # :contentReference[oaicite:7]{index=7}
             logging.error(msg)
             raise RuntimeError(msg)
 
-        # Other retcode checks...
+        if ret == mt5.TRADE_RETCODE_INVALID_PRICE:
+            msg = "OrderSend failed (10015): Invalid price—check SL/TP and tick alignment."  # :contentReference[oaicite:8]{index=8}
+            logging.error(msg)
+            raise RuntimeError(msg)
+
         if ret != mt5.TRADE_RETCODE_DONE:
-            err_msg = mt5.last_error()[1] if mt5.last_error() else "Unknown error"
+            last = mt5.last_error()
+            err_msg = last[1] if last else "Unknown error"
             msg = f"OrderSend failed (retcode={ret}): {err_msg}"
             logging.error(msg)
             raise RuntimeError(msg)

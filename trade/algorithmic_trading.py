@@ -10,6 +10,7 @@ from trade.executor import TradeExecutor
 from trade.multi_asset_support import MultiAssetManager
 from trade.mt5_connector import connect_to_mt5, shutdown_mt5
 
+
 class AlgorithmicTrader:
     """
     Integrates data fetching, signal generation, risk & capital management,
@@ -22,12 +23,12 @@ class AlgorithmicTrader:
         self.executor = TradeExecutor()
 
     def run(
-        self,
-        creds: dict,
-        symbols: list[str],
-        start_date: datetime,
-        timeframe: int,
-        count: int = 1000
+            self,
+            creds: dict,
+            symbols: list[str],
+            start_date: datetime,
+            timeframe: int,
+            count: int = 1000
     ) -> None:
         """
         :param creds: Output of load_credentials()
@@ -38,8 +39,8 @@ class AlgorithmicTrader:
         """
         # Connect to MT5 terminal and login (with retries & clean shutdown)
         if not connect_to_mt5(
-            creds['mt5']['login'], creds['mt5']['password'],
-            creds['mt5']['server'], creds['mt5']['terminal_path']
+                creds['mt5']['login'], creds['mt5']['password'],
+                creds['mt5']['server'], creds['mt5']['terminal_path']
         ):
             return
 
@@ -87,7 +88,8 @@ class AlgorithmicTrader:
                     order = self.executor.execute_order(
                         symbol=symbol,
                         side=side,
-                        quantity=allocation
+                        quantity=allocation,
+                        order_type="market"  # ensures price is omitted
                     )
                     logging.info(f"Algo trade for {symbol} at {timestamp}: {order}")
         finally:

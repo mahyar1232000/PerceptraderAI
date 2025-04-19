@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 from data.fetcher import fetch_ohlcv
+from utils.timeframe_mapper import map_timeframe
 from data.preprocessor import clean_data, add_technical_indicators
 from strategy.signal_generator import SignalGenerator
 from strategy.risk_manager import RiskManager

@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from data.fetcher import fetch_ohlcv   # Cannot find reference 'fetch_ohlcv' in 'fetcher.py'
+from data.fetcher import fetch_ohlcv
 from data.preprocessor import clean_data, add_technical_indicators
 from strategy.signal_generator import SignalGenerator
 from strategy.risk_manager import RiskManager
@@ -21,17 +21,17 @@ class AlgorithmicTrader:
         self.executor = TradeExecutor()
 
     def run(
-        self,
-        creds: dict,
-        symbols: list[str],
-        start_date: datetime,
-        timeframe: int,
-        count: int = 1000
+            self,
+            creds: dict,
+            symbols: list[str],
+            start_date: datetime,
+            timeframe: int,
+            count: int = 1000
     ) -> None:
         # Connect to MT5
         if not connect_to_mt5(
-            creds['mt5']['login'], creds['mt5']['password'],
-            creds['mt5']['server'], creds['mt5']['terminal_path']
+                creds['mt5']['login'], creds['mt5']['password'],
+                creds['mt5']['server'], creds['mt5']['terminal_path']
         ):
             return
 
@@ -40,8 +40,13 @@ class AlgorithmicTrader:
                 if not self.mm.is_supported(symbol):
                     continue
 
-                # Fetch & preprocess
+                # Fetch & validate data
                 df = fetch_ohlcv(symbol, timeframe, start_date, count)
+                if df.empty or 'close' not in df.columns:
+                    logging.warning(f"No OHLCV data for {symbol}, skipping.")
+                    continue
+
+                # Preprocess
                 df = clean_data(df)
                 df = add_technical_indicators(df)
 

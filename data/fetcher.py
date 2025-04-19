@@ -6,6 +6,7 @@ import pytz
 import MetaTrader5 as mt5
 import pandas as pd
 
+
 def fetch_ohlcv(symbol: str, timeframe: int, start_date: datetime, count: int = 1000) -> pd.DataFrame:
     """
     Fetch OHLCV data from MetaTrader5 terminal.

@@ -1,6 +1,7 @@
 import joblib
 import os
 
+
 class ModelLoader:
     @staticmethod
     def save_model(model, filename: str, model_dir="models/saved") -> None:

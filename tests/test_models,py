@@ -1,0 +1,27 @@
+# tests/test_models.py
+
+import pytest
+import numpy as np
+from perceptrader.models.ml import MLModel
+from perceptrader.models.rl import RLModel
+
+class DummyModel:
+    def predict(self, X):
+        return np.array([1])
+    def predict_proba(self, X):
+        return np.array([[0.2, 0.8]])
+
+class DummyPolicy:
+    def predict(self, obs, deterministic=True):
+        return (1, None)
+
+def test_mlmodel_predict_and_proba():
+    dm = DummyModel()
+    m = MLModel(name="dummy", model=dm)
+    assert m.predict([0,1,2]) == np.array([1])
+    assert np.allclose(m.predict_proba([0,1,2]), [0.2,0.8])
+
+def test_rlmodel_predict():
+    dp = DummyPolicy()
+    r = RLModel(name="dummy_rl", policy=dp)
+    assert r.predict([0,1,2]) == 1

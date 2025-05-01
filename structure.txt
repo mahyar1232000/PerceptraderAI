@@ -1,0 +1,73 @@
+PerceptraderAI/                      ← Top-level project directory
+├── .env                             ← Environment file holding your MT5 credentials
+├── environment.yml                  ← Conda environment spec (Python 3.8 + deps)
+├── pyproject.toml                   ← PEP 517/518 build metadata and dependencies
+├── requirements.txt                 ← pip-installable dependency list
+├── setup.py                         ← setuptools install script and entry-point
+├── README.md                        ← Project overview, install, and quick start guide
+├── structure.txt                    ← Auto-generated textual map of the tree
+├── docs/                            ← User-facing documentation
+│   ├── index.md                     ← High-level docs landing page
+│   └── usage.md                     ← Detailed usage instructions and examples
+├── mt5/                             ← Bundled MetaTrader 5 terminal
+│   └── terminal64.exe               ← MT5 Windows executable
+├── logs/                            ← Runtime logs (rotated by logger)
+│   ├── EURUSD.log                   ← Per-symbol log file
+│   ├── GBPUSD.log
+│   ├── USDJPY.log
+│   └── system.log                   ← Orchestrator & system events log
+├── data/                            ← Shared data storage
+│   ├── raw/                         ← Unprocessed historical or imported data
+│   └── processed/                   ← Cached, cleaned OHLCV parquet files
+├── models/                          ← Trained model artifacts
+│   ├── ml_v1.0.joblib               ← Serialized scikit-learn model
+│   └── rl_model.zip                 ← Zipped RL policy pickle
+├── scripts/                         ← Utility and maintenance scripts
+├── src/                             ← All source code lives here
+│   ├── orchestrator.py              ← Main system coordinator (live/backtest)
+│   ├── perceptrader.py              ← CLI entry point (console_scripts entry)
+│   ├── log_viewer.py                ← `tail -f`-style colorized log viewer
+│   └── perceptrader/                ← Core Python package
+│       ├── __init__.py              ← Package marker & top-level exports  
+│       ├── config/                  ← Configuration management
+│       │   ├── __init__.py          ← Config subpackage init
+│       │   └── settings.py          ← Pydantic Settings class loading .env  
+│       ├── data/                    ← Data fetching & preprocessing
+│       │   ├── __init__.py          ← Data subpackage init
+│       │   ├── fetch.py             ← MT5 OHLCV fetcher (MetaTrader5 API)  
+│       │   ├── pipeline.py          ← Caching, lookback, historical loader  
+│       │   └── handlers/            ← Future pluggable data-source handlers  
+│       │       └── __init__.py
+│       ├── gui/                     ← Visualization/dashboard utilities
+│       │   ├── __init__.py          ← Matplotlib equity & signal plots
+│       │   ├── dashboard.py         ← Matplotlib dashboard
+│       │   └── tk_dashboard.py      ← Tkinter real-time monitor
+│       ├── models/                  ← ML & RL model wrappers and loader
+│       │   ├── __init__.py  
+│       │   ├── factory.py           ← Versioned loader for ML (.joblib) & RL  
+│       │   ├── ml.py                ← Scikit-learn model wrapper (predict/predict_proba)  
+│       │   └── rl.py                ← RL policy wrapper (predict action)  
+│       ├── strategy/                ← Trading strategy implementations
+│       │   ├── __init__.py  
+│       │   ├── base.py              ← `StrategyBase` abstract interface  
+│       │   ├── deeprl.py            ← Deep RL–based sliding-window strategy  
+│       │   └── rsimacd.py           ← RSI-MACD crossover technical strategy  
+│       ├── utils/                   ← Helper utilities
+│       │   ├── __init__.py  
+│       │   ├── fetch.py             ← Simple wrapper for recent OHLCV  
+│       │   ├── mt5_utils.py         ← MT5 init/shutdown & order-send helper  
+│       │   └── logger.py            ← Color console, rotating-file, email handlers  
+│       ├── risk/                    ← Risk management components
+│       │   ├── __init__.py  
+│       │   └── management.py        ← Position sizing & max-risk enforcement  
+│       ├── live/                    ← Live and paper trade executors
+│       │   ├── __init__.py  
+│       │   ├── execution.py         ← Real-money MT5 execution wrapper  
+│       │   └── paper.py             ← In-memory/paper trade simulation  
+│       ├── environment.py           ← Gym-style trading environment for RL  
+│       └── optimization.py          ← Genetic hyperparameter tuner
+└── tests/                           ← pytest unit and integration tests
+    ├── test_data.py                 ← Tests for fetcher & pipeline  
+    ├── test_live.py                 ← Tests for execution loops & paper mode  
+    ├── test_models.py               ← Tests for MLModel, RLModel, factory  
+    └── test_strategy.py             ← Tests for strategy logic & signals  
